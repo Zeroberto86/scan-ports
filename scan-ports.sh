@@ -148,7 +148,7 @@ fi
 
 # Scan the ports in the specified range (parallel execution)
 for ((PORT = START_PORT; PORT <= END_PORT; PORT++)); do
-    printf "\x1b[01;43mScanning in progress, please wait...\x1b[0m\r"
+    printf "\x1b[30;43mScanning in progress, please wait...\x1b[0m\r"
     scan_port "$HOST" "$PORT" &
 done
 
