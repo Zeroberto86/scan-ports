@@ -105,8 +105,7 @@ fi
 scan_port() {
     local HOST="$1"
     local PORT="$2"
-    local TIMEOUT=2
-    local TIMEOUT_NMAP=60
+    local TIMEOUT=3
 
     # Use the nc (netcat) command to check port availability and retrieve service information
     SCAN_RESULT=$(nc -zvw$TIMEOUT "$HOST" "$PORT" 2>&1 </dev/null)
@@ -127,7 +126,8 @@ scan_port() {
 
 # Enter the host (IP address or domain name) to scan
 if [[ -z $1 ]]; then
-    echo -e "\nYou can use script with argument: ./scan-ports.sh 192.168.0.1 22 135\n"
+    echo -e "\nYou can use script with argument: scan-ports <ip-address> <start-port> <end-port> <time-out sec>\n"
+    echo -e "Example: scan-ports 192.168.0.1 21 445 30"
     read -p "Enter the host to scan (IP address or domain name): " HOST
 else
     HOST=$1
@@ -143,6 +143,17 @@ fi
 # Check the entered values
 if ! [[ $START_PORT =~ ^[0-9]+$ ]] || ! [[ $END_PORT =~ ^[0-9]+$ ]]; then
     echo "Error: Invalid port range."
+    exit 1
+fi
+
+if [[ -z $4 ]]; then
+    TIMEOUT_NMAP=60
+else
+    TIMEOUT_NMAP=$4
+fi
+
+if ! [[ $TIMEOUT_NMAP =~ ^[0-9]+$ ]]; then
+    echo "Error: Invalid timeout."
     exit 1
 fi
 

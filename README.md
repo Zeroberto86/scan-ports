@@ -11,10 +11,10 @@ sudo chmod +x /usr/local/bin/scan-ports
 
 #### How to use:
 
-`scan-ports <dns_name or ip> <first port> <last port>`
+`scan-ports <dns_name or ip> <first port> <last port> <nmap timeout sec>`
 
 > Example:
 
 ```bash
-scan-ports 192.168.0.1 22 135
+scan-ports 192.168.0.1 22 135 30
 ```
