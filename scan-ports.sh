@@ -162,12 +162,17 @@ fi
 
 # Scan the ports in the specified range (parallel execution)
 for ((PORT = START_PORT; PORT <= END_PORT; PORT++)); do
-    printf "\x1b[30;43mScanning in progress, please wait...\x1b[0m\r"
+    printf "\x1b[30;43mScanning in progress, please wait...\x1b[0m\r" 
     scan_port "$HOST" "$PORT" &
+    sleep 0.5
 done
 
 # Wait for all scanning processes to finish
 wait
+
+if [ ! -s "$SCAN_LOG" ]; then
+  printf "\x1b[2K\x1b[30;43mOpen ports not found...\x1b[0m\n"
+fi
 
 # color output
 sort -n -k2 $SCAN_LOG | sed -E 's/Port ([0-9]+)/Port \x1b[01;32m\1\x1b[0m/g; s/([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)/\x1b[01;31m\0\x1b[0m/g; s/service is ([^;]+)/service is \x1b[01;33m\1\x1b[0m/g'
