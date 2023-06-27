@@ -10,15 +10,18 @@
 
 # set -x
 
-SCAN_LOG='/tmp/scan_results.log'
-
-truncate -s 0 $SCAN_LOG
-
 # Check if the user has sudo privileges
 if ! sudo -v &>/dev/null; then
   echo "You do not have sudo privileges."
   exit 0
 fi
+
+SCAN_LOG='/tmp/scan_results.log'
+if [[ -f $SCAN_LOG ]]; then
+  sudo rm -rf $SCAN_LOG
+fi
+
+install -m 755 /dev/null $SCAN_LOG
 
 # function all letters to lowercase
 function lowercase(){
@@ -111,13 +114,13 @@ scan_port() {
     SCAN_RESULT=$(nc -zvw$TIMEOUT "$HOST" "$PORT" 2>&1 </dev/null)
    
     # Check if the port is open
-    if [[ $SCAN_RESULT =~ succeeded ]]; then
+    if [[ $SCAN_RESULT =~ succeeded ]] || [[ $SCAN_RESULT =~ open ]]; then
         SERVICE_NAME=$(timeout $TIMEOUT_NMAP nmap -T4 -p "$PORT" -sV --open "$HOST" 2>/dev/null | grep -e "^$PORT" | sed -E 's/[[:space:]]+/ /g' | awk '{for (i=3; i<=NF; i++) printf "%s", $i " "}')
         if [[ -z $SERVICE_NAME ]]; then
             SERVICE_NAME='unknown'
         fi
         # echo -e "${YELLOW}Port ${GREEN}$PORT${YELLOW} on host ${GREEN}$HOST${YELLOW} is ${GREEN}open${YELLOW}; service is ${BLUE}$SERVICE_NAME${END}" >> /tmp/scan_file.log
-        echo -e "Port $PORT on host $HOST is open; service is $SERVICE_NAME" >> $SCAN_LOG
+        echo -e "Port $PORT on host $HOST is open; service is $SERVICE_NAME" | tee -a $SCAN_LOG &>/dev/null
     # else
     #     echo "Port $PORT on host $HOST is closed."
     fi
