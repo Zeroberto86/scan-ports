@@ -169,7 +169,7 @@ fi
 for ((PORT = START_PORT; PORT <= END_PORT; PORT++)); do
     printf "\x1b[30;43mScanning in progress, please wait...\x1b[0m\r" 
     scan_port "$HOST" "$PORT" &
-    sleep 0.5
+    # sleep 0.5
 done
 
 # Wait for all scanning processes to finish
