@@ -155,7 +155,7 @@ if (( $START_PORT > $END_PORT )); then
 fi
 
 if [[ -z $4 ]]; then
-    TIMEOUT_NMAP=60
+    TIMEOUT_NMAP=10 #default nmap timeout
 else
     TIMEOUT_NMAP=$4
 fi
