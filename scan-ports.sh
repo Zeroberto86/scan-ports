@@ -145,7 +145,12 @@ else
 fi
 # Check the entered values
 if ! [[ $START_PORT =~ ^[0-9]+$ ]] || ! [[ $END_PORT =~ ^[0-9]+$ ]]; then
-    echo "Error: Invalid port range."
+    echo "Error: Invalid port range. Ports must contain only numbers."
+    exit 1
+fi
+
+if (( $START_PORT > $END_PORT )); then
+    echo "Error: Invalid port range. The end port must be larger than the start port."
     exit 1
 fi
 
