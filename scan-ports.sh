@@ -56,7 +56,7 @@ install_packages_arch() {
 }
 
 # Check if packages are already installed
-packages=("netcat" "nmap" "curl" "jq")
+packages=("nmap")
 missing_packages=()
 for package in "${packages[@]}"; do
     if ! command_exists "$package"; then
@@ -108,18 +108,18 @@ fi
 scan_port() {
     local HOST="$1"
     local PORT="$2"
-    local TIMEOUT=3
+    # local TIMEOUT=3
 
     # Use the nc (netcat) command to check port availability and retrieve service information
-    SCAN_RESULT=$(nc -zvw$TIMEOUT "$HOST" "$PORT" 2>&1 </dev/null)
+    # SCAN_RESULT=$(nc -zvw$TIMEOUT "$HOST" "$PORT" 2>&1 </dev/null)
+    SCAN_RESULT=$(nmap -p "$PORT" "$HOST" | grep -i "^$PORT")
    
     # Check if the port is open
-    if [[ $SCAN_RESULT =~ succeeded ]] || [[ $SCAN_RESULT =~ open ]]; then
+    if [[ $SCAN_RESULT =~ open ]]; then
         SERVICE_NAME=$(timeout $TIMEOUT_NMAP nmap -T4 -p "$PORT" -sV --open "$HOST" 2>/dev/null | grep -e "^$PORT" | sed -E 's/[[:space:]]+/ /g' | awk '{for (i=3; i<=NF; i++) printf "%s", $i " "}')
         if [[ -z $SERVICE_NAME ]]; then
             SERVICE_NAME='unknown'
         fi
-        # echo -e "${YELLOW}Port ${GREEN}$PORT${YELLOW} on host ${GREEN}$HOST${YELLOW} is ${GREEN}open${YELLOW}; service is ${BLUE}$SERVICE_NAME${END}" >> /tmp/scan_file.log
         echo -e "Port $PORT on host $HOST is open; service is $SERVICE_NAME" | tee -a $SCAN_LOG &>/dev/null
     # else
     #     echo "Port $PORT on host $HOST is closed."
@@ -177,6 +177,7 @@ wait
 
 if [ ! -s "$SCAN_LOG" ]; then
   printf "\x1b[2K\x1b[30;43mOpen ports not found...\x1b[0m\n"
+  exit 0
 fi
 
 # color output
