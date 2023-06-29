@@ -108,11 +108,11 @@ fi
 scan_port() {
     local HOST="$1"
     local PORT="$2"
-    # local TIMEOUT=3
+    local TIMEOUT=1
 
     # Use the nc (netcat) command to check port availability and retrieve service information
     # SCAN_RESULT=$(nc -zvw$TIMEOUT "$HOST" "$PORT" 2>&1 </dev/null)
-    SCAN_RESULT=$(nmap -p "$PORT" "$HOST" | grep -i "^$PORT")
+    SCAN_RESULT=$(timeout $TIMEOUT nmap -p "$PORT" "$HOST" 2>&1 < /dev/null | grep -i "^$PORT" )
    
     # Check if the port is open
     if [[ $SCAN_RESULT =~ open ]]; then
@@ -169,8 +169,24 @@ fi
 for ((PORT = START_PORT; PORT <= END_PORT; PORT++)); do
     printf "\x1b[30;43mScanning in progress, please wait...\x1b[0m\r" 
     scan_port "$HOST" "$PORT" &
-    # sleep 0.5
 done
+
+# MAX_PROCESSES=3
+
+# for ((PORT = START_PORT; PORT <= END_PORT; PORT++)); do
+#     
+#     printf "\x1b[30;43mScanning in progress, please wait...\x1b[0m\r"
+    
+#     # Running a port scan in the background mode
+#     {
+#         scan_port "$HOST" "$PORT"
+#     } &
+    
+#     # Limiting the number of simultaneous processes
+#     if (( (PORT - START_PORT + 1) % MAX_PROCESSES == 0 )); then
+#         wait
+#     fi
+# done
 
 # Wait for all scanning processes to finish
 wait
@@ -182,3 +198,4 @@ fi
 
 # color output
 sort -n -k2 $SCAN_LOG | sed -E 's/Port ([0-9]+)/Port \x1b[01;32m\1\x1b[0m/g; s/([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)/\x1b[01;31m\0\x1b[0m/g; s/service is ([^;]+)/service is \x1b[01;33m\1\x1b[0m/g'
+exit 0 
