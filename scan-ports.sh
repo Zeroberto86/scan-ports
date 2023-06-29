@@ -108,7 +108,7 @@ fi
 scan_port() {
     local HOST="$1"
     local PORT="$2"
-    local TIMEOUT=1
+    local TIMEOUT=2
 
     # Use the nc (netcat) command to check port availability and retrieve service information
     # SCAN_RESULT=$(nc -zvw$TIMEOUT "$HOST" "$PORT" 2>&1 </dev/null)
@@ -166,27 +166,27 @@ if ! [[ $TIMEOUT_NMAP =~ ^[0-9]+$ ]]; then
 fi
 
 # Scan the ports in the specified range (parallel execution)
-for ((PORT = START_PORT; PORT <= END_PORT; PORT++)); do
-    printf "\x1b[30;43mScanning in progress, please wait...\x1b[0m\r" 
-    scan_port "$HOST" "$PORT" &
-done
-
-# MAX_PROCESSES=3
-
 # for ((PORT = START_PORT; PORT <= END_PORT; PORT++)); do
-#     
-#     printf "\x1b[30;43mScanning in progress, please wait...\x1b[0m\r"
-    
-#     # Running a port scan in the background mode
-#     {
-#         scan_port "$HOST" "$PORT"
-#     } &
-    
-#     # Limiting the number of simultaneous processes
-#     if (( (PORT - START_PORT + 1) % MAX_PROCESSES == 0 )); then
-#         wait
-#     fi
+#     printf "\x1b[30;43mScanning in progress, please wait...\x1b[0m\r" 
+#     scan_port "$HOST" "$PORT" &
 # done
+
+MAX_PROCESSES=5
+
+for ((PORT = START_PORT; PORT <= END_PORT; PORT++)); do
+    
+    printf "\x1b[30;43mScanning in progress, please wait...\x1b[0m\r"
+    
+    # Running a port scan in the background mode
+    {
+        scan_port "$HOST" "$PORT"
+    } &
+    
+    # Limiting the number of simultaneous processes
+    if (( (PORT - START_PORT + 1) % MAX_PROCESSES == 0 )); then
+        wait
+    fi
+done
 
 # Wait for all scanning processes to finish
 wait
